@@ -1,0 +1,29 @@
+{
+  "name": "gr-search",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.ts",
+  "dev": "node ./build/server.js",
+  "start": "tsc && npm run dev",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "dev": "node ./build/server.js",
+    "start": "tsc && npm run dev"
+  },
+  "keywords": [],
+  "author": "lionelz",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@types/express": "^5.0.6",
+    "@types/lodash": "^4.17.24",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "lodash": "^4.17.23",
+    "morgan": "^1.10.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "winston": "^3.19.0"
+  }
+}
