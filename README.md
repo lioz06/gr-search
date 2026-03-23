@@ -1,17 +1,21 @@
 # Microservice Graph Query Engine
 
+[![TypeScript](https://img.shields.io/badge/TS-5.0-blue.svg)](https://www.typescriptlang.org/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue)](https://www.docker.com/)
+
 ## 1. Project Overview
 This project is a RESTful API designed to analyze and query microservice dependency graphs based on the "Train Ticket" architecture. Built with **TypeScript** and **Express**, it identifies **Complete Routes**—sequences of services representing a full flow from an entry point to a terminal destination.
 
-### Key Logic: Complete Route Discovery
-The engine distinguishes between a simple "path" and a "complete route":
-* **Root Nodes:** Nodes with no incoming dependencies (e.g., `frontend`).
-* **Terminal Nodes:** Nodes with no outgoing dependencies (e.g., `rds`, `sql`, or leaf services).
-* **Cycle Detection:** The traversal algorithm prevents infinite loops by tracking visited nodes within each unique path.
 
----
+## 2. System Architecture
 
-## 2. Generic Query Language (GQL)
+The engine processes the microservices graph using a non-linear traversal strategy focused on "Route Completeness."
+
+* **Route Discovery:** Automatically identifies "Root" nodes (entry points) and "Leaf/Sink" nodes (terminal points like RDS/SQL).
+* **Traversal Engine:** Implements a Depth-First Search (DFS) with path-memoization to ensure zero-cycle interference and full route reconstruction.
+* **GQL Layer:** A custom Lexical Parser that evaluates boolean logic against specific path segments (`start`, `end`, and `any`).
+
+## 3. Generic Query Language (GQL)
 The API supports a flexible GQL via the `gql` query parameter. This allows you to scope filters to specific parts of a complete route.
 
 | Scope | Description | Example |
@@ -26,25 +30,35 @@ if the condition does not have any scope, the scope `any.` is used.
 You can combine filters using `AND` or `OR`:
 `?gql=start.publicExposed == true AND any.vulnerabilities.length > 0`
 
----
+**Example Queries:**
+* **Critical Vulnerability Path:** `start.publicExposed == true AND any.vulnerabilities.length > 0`
+* **Public-to-Database Flow:** `start.publicExposed == true AND end.kind == rds`
+* **Tech Stack Compliance:** `any.language == java`
 
-## 3. Setup and Execution
+## 4. Quick Start
 
 ### Docker Deployment
-The project is containerized to ensure the TypeScript environment and data files are correctly configured.
 
-**1. Build and Run:**
+The project is containerized to ensure the TypeScript environment and data files are correctly configured.
 
 ```Bash
 docker build -t gr-search .
 docker run -p 8081:8081 gr-search
 ```
 
-**2. Validation & Testing**
+### Running Locally (Development)
 
-Use a virtual environment to run the validation script against the running container.
+```Bash
+npm install
+npm run build
+npm start
+```
 
-1. Set up the environment:
+## 5. Validation Suite
+
+A Python-based validation tool is provided to verify the integrity of the returned routes. It is recommended to execute this within a dedicated virtual environment.
+
+### Set up the environment
 
 ```Bash
 # Create and activate virtual environment
@@ -55,16 +69,16 @@ source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
 pip install requests
 ```
 
-2. Run the Validation Script:
+### Run the Validation Script
 
 ```Bash
 python test-apis/routes_queries.py
 ```
 
-## 5. Decisions and Assumptions
+## 6. Decisions and Assumptions
 
-    Route Completeness: To satisfy the requirement for "routes between services," the engine specifically filters for full chains. Partial sub-segments are not returned unless they represent a complete execution flow.
+**Route Completeness:** To satisfy the requirement for "routes between services," the engine specifically filters for full chains. Partial sub-segments are not returned unless they represent a complete execution flow.
 
-    Genericism: By implementing the start/end/any GQL, the system can handle future JSON schema changes without code modifications.
+**Genericism:** By implementing the start/end/any GQL, the system can handle future JSON schema changes without code modifications.
 
-    Performance: Graph traversal is performed in-memory, which is optimal for the provided dataset size.
+**Performance:** Graph traversal is performed in-memory, which is optimal for the provided dataset size.
